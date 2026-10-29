@@ -472,6 +472,30 @@ static UIBezierPath *CornerPunch(CGRect b, CGFloat r, BOOL left, BOOL top);
     [self refresh];
 }
 
+// 把页面顶角/底角切成圆角：用一个「满了再挖圆窗」的 even-odd 路径当遮罩。
+- (void)refresh {
+    self.hidden = !VGLiquidEnabled() || !(self.showsTop || self.showsBottom);
+    CAShapeLayer *mask = (CAShapeLayer *)self.layer.mask;
+    if (self.hidden) { mask.path = nil; return; }
+    if (![mask isKindOfClass:CAShapeLayer.class]) { mask = [CAShapeLayer layer]; self.layer.mask = mask; }
+    self.backgroundColor = VGPalette.current.background;
+    CGRect b = self.bounds;
+    if (b.size.width < 1 || b.size.height < 1) return;
+    CGFloat r = self.radius;
+    UIBezierPath *p = [UIBezierPath bezierPathWithRect:b];
+    if (self.showsTop) {
+        if (self.corners & kCALayerMinXMinYCorner) [p appendPath:CornerPunch(b, r, YES, YES)];
+        if (self.corners & kCALayerMaxXMinYCorner) [p appendPath:CornerPunch(b, r, NO, YES)];
+    }
+    if (self.showsBottom) {
+        if (self.corners & kCALayerMinXMaxYCorner) [p appendPath:CornerPunch(b, r, YES, NO)];
+        if (self.corners & kCALayerMaxXMaxYCorner) [p appendPath:CornerPunch(b, r, NO, NO)];
+    }
+    p.usesEvenOddFillRule = YES;
+    mask.fillRule = kCAFillRuleEvenOdd;
+    mask.path = p.CGPath;
+}
+
 @end
 
 /// One corner of the screen, rounded: a quarter disc that cuts the square corner off the page.
