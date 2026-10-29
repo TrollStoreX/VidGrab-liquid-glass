@@ -42,4 +42,8 @@ jobs:
 
       - name: 编译（只看 VidGrab 自己的源码）
         run: |
-          make -f Makefile.syntax -j"$(nproc)" TARGET=iphone:clang:16.5:15.0 ARCHS=arm64 FINALPACKAGE=1 2>&1 | tail -n 150
+          set -o pipefail
+          make -f Makefile.syntax -j"$(nproc)" TARGET=iphone:clang:16.5:15.0 ARCHS=arm64 FINALPACKAGE=1 2>&1 | tee build.log | tail -n 60
+          echo "=== 错误汇总 ==="
+          grep -E "error:" build.log | sort -u | head -40
+          if grep -qE "error:" build.log; then exit 1; fi
