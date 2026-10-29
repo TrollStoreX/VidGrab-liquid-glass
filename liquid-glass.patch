@@ -1,0 +1,1001 @@
+diff --git a/Sources/VGBrowserViewController.m b/Sources/VGBrowserViewController.m
+index 3b51aba..c09fbbe 100644
+--- a/Sources/VGBrowserViewController.m
++++ b/Sources/VGBrowserViewController.m
+@@ -1,4 +1,5 @@
+ #import "VGBrowserViewController.h"
++#import "VGLiquid.h"
+ #import <WebKit/WebKit.h>
+ #import <objc/runtime.h>
+ #import "VGEngine.h"
+@@ -122,6 +123,7 @@ static NSString *const kOverlayJS = @""
+     bar.backgroundColor = VGBackground;
+     bar.translatesAutoresizingMaskIntoConstraints = NO;
+     [self.view addSubview:bar];
++    VGApplyGlass(bar, 0, NO);   // Liquid Glass over the page (its bottom corners round into it)
+ 
+     self.closeButton = [self iconButton:@"xmark" action:@selector(closeSite)];
+     self.closeButton.accessibilityLabel = @"Close site";
+@@ -140,7 +142,8 @@ static NSString *const kOverlayJS = @""
+ 
+     UIView *field = [UIView new];
+     field.backgroundColor = VGSurface2;
+-    field.layer.cornerRadius = 11;
++    field.layer.cornerRadius = 20;   // a glass capsule, like iOS 26's
++    VGApplyGlass(field, 20, NO);
+     UIImageView *mag = [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:@"magnifyingglass"]];
+     mag.tintColor = VGTertiary;
+     mag.contentMode = UIViewContentModeScaleAspectFit;
+@@ -514,6 +517,7 @@ static NSString *normalizedLink(NSString *text) {
+ 
+     self.lastCard = [UIButton buttonWithType:UIButtonTypeCustom];
+     self.lastCard.backgroundColor = VGSurface;
++    VGApplyGlass(self.lastCard, 20, NO);
+     self.lastCard.layer.cornerRadius = 14;
+     self.lastCard.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
+     self.lastCard.contentEdgeInsets = UIEdgeInsetsMake(12, 14, 12, 14);
+@@ -791,6 +795,20 @@ static BOOL cornersOpaque(UIImage *img) {
+ 
+ #pragma mark Floating button
+ 
++// Liquid Glass for the Download button: glass behind it, the accent left on the arrow and the word.
++- (void)glassDownloadButton {
++    if (!VGLiquidEnabled()) return;
++    UIButtonConfiguration *c = self.fab.configuration;
++    if (!c) return;
++    c.baseBackgroundColor = UIColor.clearColor;
++    c.baseForegroundColor = VGText;
++    self.fab.configuration = c;
++    VGApplyGlass(self.fab, 23, NO);
++    self.fab.layer.borderWidth = 0;
++    self.fab.layer.shadowOpacity = 0;
++    self.fabBar.backgroundColor = [UIColor colorWithWhite:1 alpha:0.35];
++}
++
+ - (void)buildFab {
+     UIButtonConfiguration *c = [UIButtonConfiguration filledButtonConfiguration];
+     c.baseBackgroundColor = VGAccent;
+@@ -801,6 +819,7 @@ static BOOL cornersOpaque(UIImage *img) {
+     c.contentInsets = NSDirectionalEdgeInsetsMake(13, 18, 13, 20);
+     c.attributedTitle = [[NSAttributedString alloc] initWithString:@"Download" attributes:@{NSFontAttributeName: VGFont(15, UIFontWeightBold)}];
+     self.fab = [UIButton buttonWithConfiguration:c primaryAction:nil];
++    [self glassDownloadButton];
+     self.fab.layer.shadowColor = UIColor.blackColor.CGColor;
+     self.fab.layer.shadowOpacity = 0.5;
+     self.fab.layer.shadowRadius = 12;
+diff --git a/Sources/VGDownloadsViewController.m b/Sources/VGDownloadsViewController.m
+index e905797..22ecd73 100644
+--- a/Sources/VGDownloadsViewController.m
++++ b/Sources/VGDownloadsViewController.m
+@@ -1,4 +1,5 @@
+ #import "VGDownloadsViewController.h"
++#import "VGLiquid.h"
+ #import "VGEngine.h"
+ #import "VGDownloadDefaults.h"
+ #import "VGTheme.h"
+@@ -1144,6 +1145,7 @@ NSString *const VGSelectModeDidChangeNotification = @"VGSelectModeDidChange";
+     UIView *bar = [UIView new];
+     bar.backgroundColor = [VGSurface2 colorWithAlphaComponent:0.98];
+     bar.layer.cornerRadius = 22;
++    VGApplyGlass(bar, 22, NO);
+     bar.layer.cornerCurve = kCACornerCurveContinuous;
+     bar.layer.borderColor = VGStroke.CGColor;
+     bar.layer.borderWidth = 1;
+diff --git a/Sources/VGHomeViewController.m b/Sources/VGHomeViewController.m
+index a3f9e7d..db12d44 100644
+--- a/Sources/VGHomeViewController.m
++++ b/Sources/VGHomeViewController.m
+@@ -1,4 +1,5 @@
+ #import "VGHomeViewController.h"
++#import "VGLiquid.h"
+ #import "VGShareBridge.h"
+ #import "VGDownloadDefaults.h"
+ #import "VGLocalize.h"
+@@ -128,6 +129,7 @@ static NSString *const kClipDismissed = @"vgClipboardDismissed";
+     card.layer.cornerCurve = kCACornerCurveContinuous;
+     card.layer.borderColor = VGStroke.CGColor;
+     card.layer.borderWidth = 1;
++    VGApplyGlass(card, 20, NO);   // Liquid Glass: the page shows through the card
+     content.translatesAutoresizingMaskIntoConstraints = NO;
+     [card addSubview:content];
+     [NSLayoutConstraint activateConstraints:@[
+@@ -374,6 +376,7 @@ static NSString *const kClipDismissed = @"vgClipboardDismissed";
+     box.layer.cornerRadius = 12;
+     box.layer.borderColor = VGStroke.CGColor;
+     box.layer.borderWidth = 1;
++    VGApplyGlass(box, 16, NO);
+     UIImageView *icon = [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:@"link"]];
+     icon.tintColor = VGTertiary;
+     icon.contentMode = UIViewContentModeScaleAspectFit;
+@@ -452,6 +455,7 @@ static NSString *const kClipDismissed = @"vgClipboardDismissed";
+         UIView *chip = [UIView new];
+         chip.backgroundColor = VGSurface2;
+         chip.layer.cornerRadius = 17;
++        VGApplyGlass(chip, 17, NO);
+         chip.layer.borderColor = VGStroke.CGColor;
+         chip.layer.borderWidth = 1;
+         l.translatesAutoresizingMaskIntoConstraints = NO;
+@@ -1120,6 +1124,7 @@ static NSString *const kClipDismissed = @"vgClipboardDismissed";
+     [s setCustomSpacing:6 afterView:self.playlistTitle];
+     UIView *card = [self card:s];
+     card.layer.cornerRadius = 22;
++    VGApplyGlass(card, 22, NO);
+     self.playlistSection = [self padded:card top:6 bottom:10];
+     [self.stack addArrangedSubview:self.playlistSection];
+     self.playlistQuality = @"1080";
+diff --git a/Sources/VGLiquid.h b/Sources/VGLiquid.h
+new file mode 100644
+index 0000000..c5635cc
+--- /dev/null
++++ b/Sources/VGLiquid.h
+@@ -0,0 +1,54 @@
++#import <UIKit/UIKit.h>
++#import "VGTheme.h"
++
++// Liquid Glass: iOS 26's real glass material (UIGlassEffect) when the system has it, and a
++// hand-drawn glass (blur + edge light + inner rim + depth) that looks the same everywhere else.
++// Everything here works on iOS 15+ — on older systems only the drawn glass is used.
++
++extern NSString *const VGGlassDidChangeNotification;
++
++/// On: the glass look is used everywhere. Off is also what Reduce Transparency asks for.
++extern BOOL VGLiquidEnabled(void);
++/// Saves the switch (Settings > Liquid Glass) and rebuilds the pages with it.
++extern void VGLiquidSetEnabled(BOOL on);
++/// Starts following the system's Reduce Transparency switch. Called once at launch.
++extern void VGLiquidListenForAccessibility(void);
++
++/// Corner radius of the floating pieces. A little inside the system's 26, so our glass sits level with iOS 26's own.
++#define VGGlassRadius 22.0
++
++/// Real Liquid Glass (iOS 26 only). Before iOS 26 VGApplyGlass draws the glass itself instead.
++@interface VGGlassView : UIVisualEffectView
++/// Masked to the view's rounded corners (the bars are rounded on iOS 26).
++@property (nonatomic, assign) BOOL roundTop, roundBottom;
++/// Slightly stronger glass, for bars that sit over busy pages (Browse).
++@property (nonatomic, assign) BOOL dense;
++@end
++
++/// Applies VidGrab's glass to an existing view: the glass goes at its back, the view keeps
++/// its content. `radius` 0 keeps the view's own corner radius.
++/// `dark` is for surfaces that always sit on video (the player): dark glass on every theme.
++void VGApplyGlass(UIView *view, CGFloat radius, BOOL dark);
++/// Takes the glass off again (the view goes back to its own background color).
++void VGRemoveGlass(UIView *view);
++/// YES when the view was given glass by VGApplyGlass.
++BOOL VGHasGlass(UIView *view);
++
++/// A plain frosted layer (no glass capsule), used behind sheets.
++UIView *VGGlassBackdrop(UIView *view, BOOL dark);
++
++/// The system's own buttons and labels over the glass (Liquid Glass on iOS 26).
++void VGStyleBarItem(UIBarButtonItem *item);
++void VGStyleNavigationBar(UINavigationBar *bar);
++
++/// A round floating glass button (the browser's Download button).
++void VGStyleGlassButton(UIButton *button);
++
++/// Rounded screen edges on top of everything: bars round into the corners the way iOS 26 does.
++@interface VGGlassScreenEdges : UIView
+++ (instancetype)attachTo:(UIView *)container;
++/// Which screen corners to round, and whether the bar edge is at the top or the bottom.
++- (void)setShowsTop:(BOOL)top bottom:(BOOL)bottom corners:(UIRectCorner)corners;
++/// Draws it again (after a theme change or a rotation).
++- (void)refresh;
++@end
+diff --git a/Sources/VGLiquid.m b/Sources/VGLiquid.m
+new file mode 100644
+index 0000000..2226f10
+--- /dev/null
++++ b/Sources/VGLiquid.m
+@@ -0,0 +1,497 @@
++#import "VGLiquid.h"
++#import <objc/runtime.h>
++
++// Liquid Glass for VidGrab.
++//
++// Two glasses, one look:
++//  * iOS 26 has "UIGlassEffect": real Liquid Glass, it bends what is behind it and lights its own edge.
++//    The class, the effect and its properties are all looked up at runtime, so the app still builds and
++//    runs on iOS 15 exactly as before.
++//  * Everywhere else the same glass is drawn: a blur of what is behind, a see-through tint from the
++//    palette, a bright edge that fades out at the bottom right (the lit rim), a soft inner light and a
++//    drop shadow so the piece floats. This is the look the user sees on iOS 15 to 18.
++
++NSString *const VGGlassDidChangeNotification = @"VGGlassDidChangeNotification";
++
++static NSString *const kVGGlassOnKey = @"vgLiquidGlass";
++static char kVGStoredBackground;   // the view's own background color, kept while glass is on
++static char kVGGlassBackdropTag;   // the extra drawn-glass view, nil when the real thing is used
++static char kVGGlassRadiusKey;
++static char kVGGlassDarkKey;
++
++static BOOL gReduce = NO;          // Reduce Transparency, as last heard from the system
++
++static NSString *const kGlassBackground = @"vgGlassBackground";   // the drawn glass layer
++static NSString *const kGlassRim = @"vgGlassRim";                 // the lit edge
++static NSString *const kGlassHighlight = @"vgGlassHighlight";     // the bright spot's mask
++static NSString *const kGlassGlow = @"vgGlassGlow";               // soft inner white line
++
++#pragma mark - System pieces
++
++static Class GlassEffectClass(void) {
++    static Class c;
++    static dispatch_once_t once;
++    dispatch_once(&once, ^{
++        if (@available(iOS 26.0, *)) c = NSClassFromString(@"UIGlassEffect");
++    });
++    return c;
++}
++
++static BOOL HasRealGlass(void) {
++    return GlassEffectClass() != Nil;
++}
++
++/// `+[UIGlassEffect effectWithStyle:]` on iOS 26, nil before that.
++static id MakeGlassEffect(BOOL dark) {
++    Class c = GlassEffectClass();
++    if (!c) return nil;
++    SEL sel = NSSelectorFromString(@"effectWithStyle:");
++    if (![c respondsToSelector:sel]) return nil;
++    typedef id (*Fn)(id, SEL, NSInteger);
++    IMP mk = [c methodForSelector:sel];
++    id effect = ((Fn)mk)((id)c, sel, dark ? 1 : 0);   // 0 = regular, 1 = clear (over video)
++    [effect setValue:@NO forKey:@"interactive"];   // no wobble when a finger is near: VidGrab's glass is decoration
++    return effect;
++}
++
++static BOOL IsGlassSuperview(UIView *v) {
++    Class c = GlassEffectClass();
++    return c && [v isKindOfClass:c];
++}
++
++/// iOS 26's own glass styling for the bars' buttons and labels ("glass" configuration, done).
++void VGStyleBarItem(UIBarButtonItem *item) {
++    if (!item || !HasRealGlass()) return;
++    @try {
++        id c = [item valueForKey:@"_configuration"];
++        if (!c) return;
++        SEL setStyle = NSSelectorFromString(@"setStyle:");
++        if ([c respondsToSelector:setStyle]) {
++            typedef void (*VoidInt)(id, SEL, NSInteger);
++            IMP imp = [c methodForSelector:setStyle];
++            ((VoidInt)imp)(c, setStyle, 3);   // 3 = glass
++            SEL bgSel = NSSelectorFromString(@"setBackgroundStyle:");
++            if ([c respondsToSelector:bgSel]) ((VoidInt)[c methodForSelector:bgSel])(c, bgSel, 1);
++        }
++        SEL done = NSSelectorFromString(@"_setConfiguration:");
++        if ([item respondsToSelector:done]) {
++            typedef void (*VoidId)(id, SEL, id);
++            ((VoidId)[item methodForSelector:done])(item, done, c);
++        }
++    } @catch (__unused NSException *e) { }
++}
++
++void VGStyleNavigationBar(UINavigationBar *bar) {
++    if (!bar || !HasRealGlass() || ![bar isKindOfClass:UINavigationBar.class]) return;
++    [bar layoutIfNeeded];
++    NSMutableArray<UINavigationItem *> *items = [NSMutableArray array];
++    if (bar.topItem) [items addObject:bar.topItem];
++    if (bar.backItem) [items addObject:bar.backItem];
++    for (UINavigationItem *item in items) {
++        for (UIBarButtonItem *one in item.leftBarButtonItems ?: @[]) VGStyleBarItem(one);
++        for (UIBarButtonItem *one in item.rightBarButtonItems ?: @[]) VGStyleBarItem(one);
++    }
++}
++
++#pragma mark - Drawn glass
++
++static UIColor *GlassTint(void) {
++    VGPalette *p = VGPalette.current;
++    if (p.light) return [p.surface colorWithAlphaComponent:0.42];
++    return [p.surface colorWithAlphaComponent:0.38];
++}
++
++static UIColor *GlassEdge(void) {
++    VGPalette *p = VGPalette.current;
++    if (p.light) return [UIColor colorWithWhite:0 alpha:0.10];
++    return [UIColor colorWithWhite:1 alpha:0.14];
++}
++
++static CALayer *HighlightMask(void);
++
++static CAGradientLayer *RimLayer(void) {
++    CAGradientLayer *rim = [CAGradientLayer layer];
++    BOOL light = VGLight;
++    rim.colors = @[(id)[UIColor colorWithWhite:1 alpha:light ? 0.95 : 0.62].CGColor,
++                   (id)[UIColor colorWithWhite:light ? 0.55 : 1 alpha:light ? 0.45 : 0.20].CGColor,
++                   (id)[UIColor colorWithWhite:light ? 0.35 : 1 alpha:0.06].CGColor];
++    rim.locations = @[@0.0, @0.55, @1.0];
++    rim.startPoint = CGPointMake(0.12, 0.0);
++    rim.endPoint = CGPointMake(0.88, 1.0);
++    rim.mask = HighlightMask();
++    return rim;
++}
++
++/// The bright spot in the top-left that fades across the piece, like light falling on the glass.
++static CALayer *HighlightMask(void) {
++    CAGradientLayer *g = [CAGradientLayer layer];
++    g.type = kCAGradientLayerRadial;
++    g.colors = @[(id)[UIColor whiteColor].CGColor, (id)[UIColor whiteColor].CGColor, (id)[UIColor clearColor].CGColor];
++    g.locations = @[@0.0, @0.55, @1.0];
++    g.startPoint = CGPointMake(0.05, 0.0);
++    g.endPoint = CGPointMake(0.95, 1.0);
++    return g;
++}
++
++typedef NS_ENUM(NSInteger, VGGlassCornerStyle) { VGGlassCornersAll, VGGlassCornersTop, VGGlassCornersBottom };
++
++static UIBezierPath *GlassPath(CGRect b, CGFloat r, VGGlassCornerStyle style) {
++    CGFloat x0 = 0, y0 = 0, x1 = b.size.width, y1 = b.size.height;
++    CGFloat top = (style == VGGlassCornersAll || style == VGGlassCornersTop) ? r : 0;
++    CGFloat bottom = (style == VGGlassCornersAll || style == VGGlassCornersBottom) ? r : 0;
++    UIBezierPath *p = [UIBezierPath bezierPath];
++    [p moveToPoint:CGPointMake(x0, y0 + top)];
++    if (top > 0) [p addArcWithCenter:CGPointMake(x0 + top, y0 + top) radius:top startAngle:M_PI endAngle:M_PI * 1.5 clockwise:YES];
++    else [p addLineToPoint:CGPointMake(x0, y0)];
++    [p addLineToPoint:CGPointMake(x1 - top, y0)];
++    if (top > 0) [p addArcWithCenter:CGPointMake(x1 - top, y0 + top) radius:top startAngle:M_PI * 1.5 endAngle:0 clockwise:YES];
++    [p addLineToPoint:CGPointMake(x1, y1 - bottom)];
++    if (bottom > 0) [p addArcWithCenter:CGPointMake(x1 - bottom, y1 - bottom) radius:bottom startAngle:0 endAngle:M_PI_2 clockwise:YES];
++    else [p addLineToPoint:CGPointMake(x1, y1)];
++    [p addLineToPoint:CGPointMake(x0 + bottom, y1)];
++    if (bottom > 0) [p addArcWithCenter:CGPointMake(x0 + bottom, y1 - bottom) radius:bottom startAngle:M_PI_2 endAngle:M_PI clockwise:YES];
++    [p closePath];
++    return p;
++}
++
++static void LayoutDrawnGlass(UIView *host, UIVisualEffectView *glass, BOOL dark, BOOL dense) {
++    CGRect b = glass.bounds;
++    if (b.size.width < 1 || b.size.height < 1) return;
++    CGFloat radius = [objc_getAssociatedObject(host, &kVGGlassRadiusKey) doubleValue];
++    VGGlassCornerStyle style = VGGlassCornersAll;
++    UIBezierPath *path;
++    if (radius > 0.5) {
++        path = GlassPath(b, radius, style);
++    } else {
++        // Radius 0: a full-width bar. Round the edge it hangs from, like the bars on iOS 26.
++        UIView *parent = host.superview;
++        UIEdgeInsets in = parent ? parent.safeAreaInsets : UIEdgeInsetsZero;
++        CGFloat parentW = parent ? parent.bounds.size.width : 0, parentH = parent ? parent.bounds.size.height : 0;
++        BOOL atTop = host.frame.origin.y <= MAX(in.top, 1);
++        BOOL atBottom = CGRectGetMaxY(host.frame) >= parentH - MAX(in.bottom, 1) - 0.5;
++        if (atTop || atBottom) {
++            path = GlassPath(b, 26, atTop ? VGGlassCornersBottom : VGGlassCornersTop);
++        } else if (parentW > 0 && host.bounds.size.width >= parentW - 1) {
++            path = GlassPath(b, 26, VGGlassCornersAll);   // a bar that is not at either edge: round both ends
++        } else {
++            return;   // an ordinary flat view: let it be
++        }
++    }
++    CAShapeLayer *mask = [CAShapeLayer layer];
++    mask.path = path.CGPath;
++    glass.layer.mask = mask;
++
++    // Tint from the theme, so VidGrab's glass still looks like VidGrab.
++    UIView *tint = [glass.contentView viewWithTag:0x6C1];
++    if (!tint) {
++        tint = [UIView new];
++        tint.tag = 0x6C1;
++        tint.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
++        tint.userInteractionEnabled = NO;
++        [glass.contentView insertSubview:tint atIndex:0];
++    }
++    tint.frame = b;
++    tint.backgroundColor = dark ? [UIColor colorWithWhite:0 alpha:0.16]
++                                : [GlassTint() colorWithAlphaComponent:(dense ? 0.55 : 0.38)];
++
++    // The lit edge: a 1pt line, brighter top-left, almost gone bottom-right.
++    static char kRimKey, kGlowKey;
++    CAShapeLayer *rim = objc_getAssociatedObject(glass, &kRimKey);
++    if (!rim) {
++        rim = (CAShapeLayer *)RimLayer();
++        rim.fillColor = UIColor.clearColor.CGColor;
++        rim.lineWidth = 1;
++        rim.zPosition = 10;
++        [glass.layer addSublayer:rim];
++        objc_setAssociatedObject(glass, &kRimKey, rim, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
++    }
++    rim.frame = b;
++    rim.path = path.CGPath;
++
++    // A soft light just inside the edge (sits on the blur, not on our own tint).
++    CAShapeLayer *glow = objc_getAssociatedObject(glass, &kGlowKey);
++    if (!glow) {
++        glow = (CAShapeLayer *)RimLayer();
++        CAShapeLayer *m = [CAShapeLayer layer];
++        m.fillColor = UIColor.clearColor.CGColor;
++        m.strokeColor = UIColor.blackColor.CGColor;
++        m.lineWidth = 6;
++        m.shadowColor = UIColor.blackColor.CGColor;
++        m.shadowOpacity = 0.6;
++        m.shadowRadius = 3;
++        m.shadowOffset = CGSizeZero;
++        m.opacity = 0.55;
++        glow.mask = m;
++        glow.opacity = 0.55;
++        [glass.contentView.layer addSublayer:glow];
++        objc_setAssociatedObject(glass, &kGlowKey, glow, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
++    }
++    glow.frame = b;
++    glow.path = path.CGPath;
++    CAShapeLayer *gm = (CAShapeLayer *)[glow mask];
++    gm.frame = b;
++    gm.path = path.CGPath;
++
++    // Depth: the piece floats over the page.
++    glass.layer.shadowPath = path.CGPath;
++    glass.layer.shadowColor = UIColor.blackColor.CGColor;
++    glass.layer.shadowOpacity = dark ? 0.45 : 0.28;
++    glass.layer.shadowRadius = 18;
++    glass.layer.shadowOffset = CGSizeMake(0, 8);
++}
++
++#pragma mark - Glass hosts
++
++/// UIVisualEffectView that draws its glass again whenever it changes size.
++@interface VGDrawnGlassView : UIVisualEffectView
++@property (nonatomic, weak) UIView *host;
++@property (nonatomic, assign) BOOL dark;
++@property (nonatomic, assign) BOOL dense;
++@end
++
++@implementation VGDrawnGlassView
++- (void)layoutSubviews {
++    [super layoutSubviews];
++    LayoutDrawnGlass(self.host ?: self, self, self.dark, self.dense);
++}
++- (void)setDense:(BOOL)dense { _dense = dense; [self setNeedsLayout]; }
++- (void)setDark:(BOOL)dark { _dark = dark; [self setNeedsLayout]; }
++@end
++
++@interface VGGlassView ()
++@property (nonatomic, assign) BOOL dark;   // kept for the build override below
++@end
++
++@implementation VGGlassView
++
++@synthesize dark = _glassViewDark;
++
++- (void)build {
++    self.userInteractionEnabled = NO;
++    if (HasRealGlass()) {
++        self.effect = (UIVisualEffect *)MakeGlassEffect(self.dark);
++        self.layer.cornerRadius = VGGlassRadius;
++        self.layer.cornerCurve = kCACornerCurveContinuous;
++        self.clipsToBounds = YES;
++        return;
++    }
++    self.effect = [UIBlurEffect effectWithStyle:self.dark || !VGLight ? UIBlurEffectStyleSystemMaterialDark : UIBlurEffectStyleSystemMaterialLight];
++    self.backgroundColor = UIColor.clearColor;
++}
++
++@synthesize dense = _dense, roundTop = _roundTop, roundBottom = _roundBottom;
++- (BOOL)dark { return _glassViewDark; }
++- (void)setDark:(BOOL)dark { _glassViewDark = dark; [self build]; [self setNeedsLayout]; }
++- (void)setDense:(BOOL)dense { _dense = dense; [self setNeedsLayout]; }
++
++- (void)layoutSubviews {
++    [super layoutSubviews];
++    if (HasRealGlass()) {
++        // The real glass rounds itself; only mask it when it is a full-width bar.
++        if (self.roundTop || self.roundBottom) {
++            VGGlassCornerStyle s = self.roundTop ? VGGlassCornersBottom : VGGlassCornersTop;
++            UIBezierPath *path = GlassPath(self.bounds, 26, s);
++            CAShapeLayer *m = (CAShapeLayer *)self.layer.mask;
++            if (![m isKindOfClass:CAShapeLayer.class]) { m = [CAShapeLayer layer]; self.layer.mask = m; }
++            m.path = path.CGPath;
++        } else {
++            self.layer.mask = nil;
++        }
++        return;
++    }
++}
++@end
++
++#pragma mark - Public
++
++BOOL VGLiquidEnabled(void) {
++    NSNumber *n = [NSUserDefaults.standardUserDefaults objectForKey:kVGGlassOnKey];
++    BOOL on = n ? n.boolValue : YES;
++    return on && !gReduce;
++}
++
++void VGLiquidSetEnabled(BOOL on) {
++    [NSUserDefaults.standardUserDefaults setBool:on forKey:kVGGlassOnKey];
++    [NSNotificationCenter.defaultCenter postNotificationName:VGGlassDidChangeNotification object:nil];
++    [NSNotificationCenter.defaultCenter postNotificationName:VGThemeDidChangeNotification object:nil];
++}
++
++static BOOL gListening = NO;
++
++void VGLiquidListenForAccessibility(void) {
++    if (gListening) return;
++    gListening = YES;
++    gReduce = UIAccessibilityIsReduceTransparencyEnabled();
++    [NSNotificationCenter.defaultCenter addObserverForName:UIAccessibilityReduceTransparencyStatusDidChangeNotification
++                                                    object:nil queue:NSOperationQueue.mainQueue
++                                                usingBlock:^(NSNotification *n) {
++        gReduce = UIAccessibilityIsReduceTransparencyEnabled();
++        [NSNotificationCenter.defaultCenter postNotificationName:VGGlassDidChangeNotification object:nil];
++        [NSNotificationCenter.defaultCenter postNotificationName:VGThemeDidChangeNotification object:nil];
++    }];
++}
++
++BOOL VGHasGlass(UIView *view) {
++    return objc_getAssociatedObject(view, &kVGStoredBackground) != nil;
++}
++
++void VGRemoveGlass(UIView *view) {
++    UIView *glass = objc_getAssociatedObject(view, &kVGGlassBackdropTag);
++    if ([glass isKindOfClass:UIView.class]) [glass removeFromSuperview];
++    objc_setAssociatedObject(view, &kVGGlassBackdropTag, nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
++    UIColor *old = objc_getAssociatedObject(view, &kVGStoredBackground);
++    if (old) view.backgroundColor = [old isKindOfClass:UIColor.class] ? old : UIColor.clearColor;
++    objc_setAssociatedObject(view, &kVGStoredBackground, nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
++    view.layer.borderWidth = 0;
++    view.layer.shadowOpacity = 0;
++}
++
++void VGApplyGlass(UIView *view, CGFloat radius, BOOL dark) {
++    if (!view) return;
++    if (!VGLiquidEnabled()) { VGRemoveGlass(view); return; }
++    BOOL already = VGHasGlass(view);
++    UIView *glass = objc_getAssociatedObject(view, &kVGGlassBackdropTag);
++
++    BOOL real = HasRealGlass();
++    BOOL wrongKind = glass && real != [glass isKindOfClass:UIVisualEffectView.class];
++    if (glass && (wrongKind || (!real && ![glass isKindOfClass:VGDrawnGlassView.class]))) {
++        [glass removeFromSuperview];
++        glass = nil;
++    }
++    if (!already) {
++        objc_setAssociatedObject(view, &kVGStoredBackground, view.backgroundColor ?: (id)NSNull.null, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
++        view.backgroundColor = UIColor.clearColor;
++        view.layer.borderWidth = 0;
++        view.layer.shadowOpacity = 0;
++    }
++    objc_setAssociatedObject(view, &kVGGlassRadiusKey, @(radius), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
++    objc_setAssociatedObject(view, &kVGGlassDarkKey, @(dark), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
++
++    if (!glass) {
++        if (real) {
++            VGGlassView *g = [[VGGlassView alloc] initWithEffect:(UIVisualEffect *)MakeGlassEffect(dark)];
++            g.dark = dark;
++            g.userInteractionEnabled = NO;
++            g.layer.cornerRadius = radius > 0 ? radius : 0;
++            g.layer.cornerCurve = kCACornerCurveContinuous;
++            g.clipsToBounds = radius > 0;
++            glass = g;
++        } else {
++            VGDrawnGlassView *g = [VGDrawnGlassView new];
++            g.host = view;
++            g.dark = dark;
++            g.effect = [UIBlurEffect effectWithStyle:(dark || !VGLight) ? UIBlurEffectStyleSystemMaterialDark : UIBlurEffectStyleSystemMaterialLight];
++            g.userInteractionEnabled = NO;
++            glass = g;
++        }
++        glass.translatesAutoresizingMaskIntoConstraints = NO;
++        [view insertSubview:glass atIndex:0];
++        [NSLayoutConstraint activateConstraints:@[
++            [glass.leadingAnchor constraintEqualToAnchor:view.leadingAnchor],
++            [glass.trailingAnchor constraintEqualToAnchor:view.trailingAnchor],
++            [glass.topAnchor constraintEqualToAnchor:view.topAnchor],
++            [glass.bottomAnchor constraintEqualToAnchor:view.bottomAnchor],
++        ]];
++        objc_setAssociatedObject(view, &kVGGlassBackdropTag, glass, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
++    }
++    if ([glass isKindOfClass:VGDrawnGlassView.class]) {
++        VGDrawnGlassView *g = (VGDrawnGlassView *)glass;
++        g.dark = dark;
++        [g setNeedsLayout];
++    }
++}
++
++UIView *VGGlassBackdrop(UIView *view, BOOL dark) {
++    if (!view || !VGLiquidEnabled()) return nil;
++    UIView *g = [UIView new];
++    g.userInteractionEnabled = NO;
++    g.translatesAutoresizingMaskIntoConstraints = NO;
++    [view insertSubview:g atIndex:0];
++    [NSLayoutConstraint activateConstraints:@[
++        [g.leadingAnchor constraintEqualToAnchor:view.leadingAnchor],
++        [g.trailingAnchor constraintEqualToAnchor:view.trailingAnchor],
++        [g.topAnchor constraintEqualToAnchor:view.topAnchor],
++        [g.bottomAnchor constraintEqualToAnchor:view.bottomAnchor],
++    ]];
++    return g;
++}
++
++void VGStyleGlassButton(UIButton *button) {
++    if (!button) return;
++    if (HasRealGlass()) {
++        // 26's own glass button: the glass capsule, with the accent kept for the icon.
++        if (@available(iOS 26.0, *)) {
++            UIGlassEffect *fx = (UIGlassEffect *)MakeGlassEffect(NO);
++            if (fx) button.configuration = [UIButtonConfiguration glassButtonConfiguration];
++        }
++    }
++}
++
++#pragma mark - Screen edges
++
++@interface VGGlassScreenEdges ()
++@property (nonatomic, assign) UIRectCorner corners;
++@property (nonatomic, assign) CGFloat radius;
++@property (nonatomic, assign) BOOL showsTop, showsBottom;
++@end
++
++@implementation VGGlassScreenEdges
++
++@synthesize corners = _corners, radius = _radius, showsTop = _showsTop, showsBottom = _showsBottom;
++
+++ (instancetype)attachTo:(UIView *)container {
++    if (!container) return nil;
++    VGGlassScreenEdges *e = [[VGGlassScreenEdges alloc] initWithFrame:CGRectZero];
++    e.userInteractionEnabled = NO;
++    e.hidden = YES;
++    e.translatesAutoresizingMaskIntoConstraints = NO;
++    [container addSubview:e];
++    [NSLayoutConstraint activateConstraints:@[
++        [e.leadingAnchor constraintEqualToAnchor:container.leadingAnchor],
++        [e.trailingAnchor constraintEqualToAnchor:container.trailingAnchor],
++        [e.topAnchor constraintEqualToAnchor:container.topAnchor],
++        [e.bottomAnchor constraintEqualToAnchor:container.bottomAnchor],
++    ]];
++    return e;
++}
++
++- (instancetype)initWithFrame:(CGRect)frame {
++    if ((self = [super initWithFrame:frame])) {
++        _radius = 26;
++        _corners = 0;
++    }
++    return self;
++}
++
++- (void)setShowsTop:(BOOL)top bottom:(BOOL)bottom corners:(UIRectCorner)corners {
++    if (self.showsTop == top && self.showsBottom == bottom && self.corners == corners) return;
++    self.showsTop = top; self.showsBottom = bottom; self.corners = corners;
++    self.hidden = !VGLiquidEnabled() || !(top || bottom);
++    [self refresh];
++}
++
++@end
++
++/// One corner of the screen, rounded: a quarter disc that cuts the square corner off the page.
++/// (Clockwise arcs run left -> right, so the left and right corners are drawn in opposite directions.)
++static UIBezierPath *CornerPunch(CGRect b, CGFloat r, BOOL left, BOOL top) {
++    CGFloat cx = left ? r : b.size.width - r;
++    CGFloat cy = top ? r : b.size.height - r;
++    CGPoint c = CGPointMake(cx, cy);
++    UIBezierPath *p = [UIBezierPath bezierPath];
++    if (top && left) {
++        [p moveToPoint:CGPointMake(0, r)];
++        [p addArcWithCenter:c radius:r startAngle:M_PI_2 endAngle:M_PI clockwise:NO];
++    } else if (top) {
++        [p moveToPoint:CGPointMake(b.size.width - r, 0)];
++        [p addArcWithCenter:c radius:r startAngle:-M_PI_2 endAngle:0 clockwise:YES];
++    } else if (left) {
++        [p moveToPoint:CGPointMake(0, cy)];
++        [p addArcWithCenter:c radius:r startAngle:M_PI endAngle:M_PI_2 clockwise:YES];
++    } else {
++        [p moveToPoint:CGPointMake(b.size.width - r, b.size.height)];
++        [p addArcWithCenter:c radius:r startAngle:M_PI_2 endAngle:0 clockwise:NO];
++    }
++    [p closePath];
++    return p;
++}
+diff --git a/Sources/VGPlayerGestures.m b/Sources/VGPlayerGestures.m
+index b06d5df..e8e8801 100644
+--- a/Sources/VGPlayerGestures.m
++++ b/Sources/VGPlayerGestures.m
+@@ -1,4 +1,5 @@
+ #import "VGPlayerGestures.h"
++#import "VGLiquid.h"
+ #import "VGTheme.h"
+ #import <MediaPlayer/MediaPlayer.h>
+ #import <AVFoundation/AVFoundation.h>
+@@ -32,6 +33,11 @@ static void StyleGlass(UIVisualEffectView *v, CGFloat radius) {
+     v.layer.borderWidth = 1;
+     v.layer.borderColor = VGStroke.CGColor;
+     v.userInteractionEnabled = NO;
++    if (VGLiquidEnabled()) {   // Liquid Glass over the video: the picture shows through the glass
++        VGApplyGlass(v, radius, YES);
++        v.effect = nil;
++        return;
++    }
+     UIView *tint = [[UIView alloc] initWithFrame:v.bounds];
+     tint.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+     tint.backgroundColor = [VGSurface colorWithAlphaComponent:0.62];
+diff --git a/Sources/VGPlayerViewController.m b/Sources/VGPlayerViewController.m
+index 6ec45e4..6b5bd32 100644
+--- a/Sources/VGPlayerViewController.m
++++ b/Sources/VGPlayerViewController.m
+@@ -295,6 +295,11 @@ static UILabel *TimeLabel(NSTextAlignment align) {
+     UIVisualEffectView *blur = [[UIVisualEffectView alloc] initWithEffect:[UIBlurEffect effectWithStyle:UIBlurEffectStyleSystemThickMaterialDark]];
+     blur.translatesAutoresizingMaskIntoConstraints = NO;
+     [self.card addSubview:blur];
++    // Liquid Glass: the sheet becomes glass, the blur above is only used before iOS 26.
++    if (VGLiquidEnabled() && NSClassFromString(@"UIGlassEffect") && @available(iOS 26.0, *)) {
++        self.card.backgroundColor = UIColor.clearColor;
++        VGApplyGlass(self.card, 28, YES);
++    }
+ 
+     UIView *grab = [UIView new];
+     grab.backgroundColor = [UIColor colorWithWhite:1 alpha:0.3];
+@@ -1580,11 +1585,15 @@ static char kSubAssetKey;
+     UIVisualEffectView *t = [[UIVisualEffectView alloc] initWithEffect:[UIBlurEffect effectWithStyle:UIBlurEffectStyleSystemMaterialDark]];
+     t.layer.cornerRadius = 21;
+     t.clipsToBounds = YES;
++    if (VGLiquidEnabled()) {   // Liquid Glass pill over the video
++        VGApplyGlass(t, 21, YES);
++        t.effect = nil;
++    }
+     t.layer.borderWidth = 1;
+     t.layer.borderColor = VGPlayerStroke.CGColor;
+     t.translatesAutoresizingMaskIntoConstraints = NO;
+     UIView *tint = [UIView new];
+-    tint.backgroundColor = [VGPlayerSurface colorWithAlphaComponent:0.62];
++    tint.backgroundColor = [VGPlayerSurface colorWithAlphaComponent:VGLiquidEnabled() ? 0.30 : 0.62];
+     tint.translatesAutoresizingMaskIntoConstraints = NO;
+     [t.contentView addSubview:tint];
+     UIImageView *iv = [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:icon]];
+@@ -1971,6 +1980,11 @@ static char kSubAssetKey;
+     v.clipsToBounds = YES;
+     v.layer.cornerRadius = 16; v.layer.cornerCurve = kCACornerCurveContinuous;
+     v.layer.borderWidth = 1; v.layer.borderColor = [UIColor colorWithWhite:1 alpha:0.18].CGColor;
++    if (VGLiquidEnabled()) {   // Liquid Glass skips this flat blur: the glass is built on the pill itself
++        v.effect = nil;
++        [v.contentView.subviews.firstObject removeFromSuperview];
++        VGApplyGlass(v, 16, YES);
++    }
+     UIView *tint = [UIView new];   // an extra dark layer so a very bright picture can't wash the text out
+     tint.backgroundColor = [UIColor colorWithWhite:0 alpha:0.42];
+     tint.translatesAutoresizingMaskIntoConstraints = NO;
+diff --git a/Sources/VGProgressPill.m b/Sources/VGProgressPill.m
+index 42993d1..d822dde 100644
+--- a/Sources/VGProgressPill.m
++++ b/Sources/VGProgressPill.m
+@@ -1,6 +1,7 @@
+ #import "VGProgressPill.h"
+ #import "VGEngine.h"
+ #import "VGTheme.h"
++#import "VGLiquid.h"
+ 
+ // A round download bubble you can drag anywhere, like AssistiveTouch.
+ // Let go and it snaps to the nearest side. It remembers where you left it.
+@@ -29,6 +30,7 @@ static NSString *const kYKey = @"vgBubbleY";         // 0...1 down the screen
+         self.layer.shadowOpacity = 0.55;
+         self.layer.shadowRadius = 14;
+         self.layer.shadowOffset = CGSizeMake(0, 5);
++        VGApplyGlass(self, kSize / 2, NO);   // Liquid Glass: the page shows through the bubble
+         self.accessibilityLabel = @"Downloads in progress";
+         self.accessibilityHint = @"Opens Downloads. Drag to move it.";
+         self.accessibilityTraits = UIAccessibilityTraitButton;
+diff --git a/Sources/VGSettingsViewController.m b/Sources/VGSettingsViewController.m
+index 2a69534..ddf24f8 100644
+--- a/Sources/VGSettingsViewController.m
++++ b/Sources/VGSettingsViewController.m
+@@ -1,4 +1,5 @@
+ #import "VGSettingsViewController.h"
++#import "VGLiquid.h"
+ #import "VGDownloadDefaults.h"
+ #import "VGTheme.h"
+ #import "VGLocalize.h"
+@@ -131,7 +132,7 @@ typedef NS_ENUM(NSInteger, VGSection) { VGSectionLanguage, VGSectionEngine, VGSe
+         case VGSectionGestures: return 6;
+         case VGSectionSubtitles: return 6;
+         case VGSectionAudio: return 3;
+-        case VGSectionInterface: return 2;
++        case VGSectionInterface: return 3;
+         case VGSectionLanguage: return 1;
+         case VGSectionBackup: return 2;
+         case VGSectionVault: return [VGVaultLock usesPasscode] ? 2 : 1;
+@@ -434,6 +435,19 @@ typedef NS_ENUM(NSInteger, VGSection) { VGSectionLanguage, VGSectionEngine, VGSe
+     }
+     if (ip.section == VGSectionInterface) {
+         BOOL pad = UIDevice.currentDevice.userInterfaceIdiom == UIUserInterfaceIdiomPad;
++        if (ip.row == 2) {
++            // Liquid Glass: the iOS 26 look, drawn by hand on older versions too.
++            BOOL glass = VGLiquidEnabled();
++            UITableViewCell *c = [self cellWithTitle:@"Liquid Glass" value:(UIAccessibilityIsReduceTransparencyEnabled() ? @"Off by Reduce Transparency" : (glass ? nil : @"Off"))
++                                                icon:@"circle.hexagongrid.fill" tint:glass ? VGAccent : VGTertiary];
++            UISwitch *sw = [UISwitch new];
++            sw.on = glass;
++            sw.onTintColor = VGAccent;
++            [sw addTarget:self action:@selector(glassChanged:) forControlEvents:UIControlEventValueChanged];
++            c.accessoryView = sw;
++            c.selectionStyle = UITableViewCellSelectionStyleNone;
++            return c;
++        }
+         if (ip.row == 0) {
+             UITableViewCell *c = [self cellWithTitle:@"iPad layout" value:pad ? nil : @"iPad only" icon:@"sidebar.left" tint:pad ? nil : VGTertiary];
+             UISwitch *sw = [UISwitch new];
+@@ -823,6 +837,12 @@ typedef NS_ENUM(NSInteger, VGSection) { VGSectionLanguage, VGSectionEngine, VGSe
+ - (void)autoStartSharedChanged:(UISwitch *)sw { VGDownloadDefaults.autoStartShared = sw.on; }
+ - (void)askDeleteChanged:(UISwitch *)sw { VGDownloadDefaults.askDeleteWatched = sw.on; }
+ - (void)hapticsChanged:(UISwitch *)sw { VGHaptics.enabled = sw.on; if (sw.on) [VGHaptics select]; }
++// Liquid Glass on or off: the pages are rebuilt by the app delegate, so everything picks the new look up.
++- (void)glassChanged:(UISwitch *)sw {
++    VGLiquidSetEnabled(sw.on);
++    [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:VGSectionInterface] withRowAnimation:UITableViewRowAnimationNone];
++}
++
+ - (void)padLayoutChanged:(UISwitch *)sw {
+     VGSidebarController.layoutOn = sw.on;   // the whole screen changes at once
+     [NSNotificationCenter.defaultCenter postNotificationName:VGLayoutDidChangeNotification object:nil];
+diff --git a/Sources/main.m b/Sources/main.m
+index 93a8146..f201322 100644
+--- a/Sources/main.m
++++ b/Sources/main.m
+@@ -18,6 +18,7 @@
+ #import "VGSidebarController.h"
+ #import "VGHaptics.h"
+ #import "VGShareBridge.h"
++#import "VGLiquid.h"
+ 
+ // The tab controller decides the status bar (clock, battery, Wi-Fi): dark icons on the white theme, light icons otherwise.
+ @interface VGRootTabs : UITabBarController
+@@ -27,11 +28,18 @@
+ - (UIStatusBarStyle)preferredStatusBarStyle { return VGLight ? UIStatusBarStyleDarkContent : UIStatusBarStyleLightContent; }
+ @end
+ 
++// YES on iOS 26+, where the system draws the bars itself (and we leave the tab bar's shape to it).
++static BOOL HasRealGlassSystem(void) {
++    if (@available(iOS 26.0, *)) return NSClassFromString(@"UIGlassEffect") != Nil;
++    return NO;
++}
++
+ @interface VGAppDelegate : UIResponder <UIApplicationDelegate, UITabBarControllerDelegate>
+ @property (nonatomic, strong) UIWindow *window;
+ @property (nonatomic, strong) UITabBarController *tabs;
+ @property (nonatomic, strong) VGHomeViewController *home;
+ @property (nonatomic, strong) VGProgressPill *pill;
++@property (nonatomic, strong) VGGlassScreenEdges *edges;
+ @end
+ 
+ @implementation VGAppDelegate
+@@ -41,11 +49,12 @@
+     [tab configureWithOpaqueBackground];
+     tab.backgroundColor = VGTabBarBg;
+     tab.shadowColor = VGStroke;
+-    if (VGPalette.current.glass) {   // glass theme: see-through bars with a blur
+-        [tab configureWithTransparentBackground];
+-        tab.backgroundEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleSystemThinMaterialDark];
+-        tab.backgroundColor = [VGTabBarBg colorWithAlphaComponent:0.50];
+-        tab.shadowColor = [UIColor colorWithWhite:(VGLight ? 0 : 1) alpha:0.12];
++    BOOL liquid = VGLiquidEnabled();
++    if (VGPalette.current.glass || liquid) {   // glass: see-through bars with a blur (real Liquid Glass on iOS 26)
++        [tab configureWithDefaultBackground];
++        tab.backgroundEffect = [UIBlurEffect effectWithStyle:VGLight ? UIBlurEffectStyleSystemThinMaterialLight : UIBlurEffectStyleSystemThinMaterialDark];
++        tab.backgroundColor = [VGTabBarBg colorWithAlphaComponent:VGPalette.current.glass ? 0.50 : 0.30];
++        tab.shadowColor = [UIColor colorWithWhite:(VGLight ? 0 : 1) alpha:0.10];
+     }
+     UITabBarItemAppearance *item = [UITabBarItemAppearance new];
+     item.normal.iconColor = VGTertiary;
+@@ -73,6 +82,12 @@
+         nav.backgroundEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleSystemThinMaterialDark];
+         nav.backgroundColor = [VGBackground colorWithAlphaComponent:0.55];
+         nav.shadowColor = [UIColor colorWithWhite:(VGLight ? 0 : 1) alpha:0.08];
++    } else if (liquid && !VGPalette.current.carbon) {
++        // Liquid Glass: the bar shows what scrolls under it, and its buttons get their own glass capsules.
++        [nav configureWithDefaultBackground];
++        nav.backgroundEffect = [UIBlurEffect effectWithStyle:VGLight ? UIBlurEffectStyleSystemThinMaterialLight : UIBlurEffectStyleSystemThinMaterialDark];
++        nav.backgroundColor = [VGBackground colorWithAlphaComponent:0.30];
++        nav.shadowColor = UIColor.clearColor;
+     }
+     nav.titleTextAttributes = @{NSForegroundColorAttributeName: VGText, NSFontAttributeName: VGFont(17, UIFontWeightBold)};
+     nav.largeTitleTextAttributes = @{NSForegroundColorAttributeName: VGText, NSFontAttributeName: VGFont(32, UIFontWeightHeavy)};
+@@ -80,6 +95,16 @@
+     UINavigationBar.appearance.scrollEdgeAppearance = nav;
+     UINavigationBar.appearance.compactAppearance = nav;
+     UINavigationBar.appearance.tintColor = VGAccent;
++
++    // iOS 26: the bar buttons become glass capsules (left alone on older systems).
++    if (liquid) {
++        for (UINavigationController *n in self.tabs.viewControllers) {
++            if (![n isKindOfClass:UINavigationController.class]) continue;
++            VGStyleNavigationBar(n.navigationBar);
++            n.navigationBar.tintColor = VGLight ? VGAccent : VGText;
++        }
++    }
++    self.tabs.tabBar.tintColor = liquid ? (VGLight ? VGAccent : VGText) : VGText;
+ }
+ 
+ - (NSArray<UIViewController *> *)buildNavs {
+@@ -132,6 +157,58 @@
+     [self.tabs.view addSubview:self.pill];
+ }
+ 
++// iOS 26's floating tab bar has rounded top corners. Before it, the bar gets the same corners drawn on.
++- (void)roundTabBar {
++    UITabBar *tb = self.tabs.tabBar;
++    if (!tb) return;
++    if (HasRealGlassSystem()) { tb.layer.mask = nil; return; }
++    if (!VGLiquidEnabled()) { tb.layer.mask = nil; return; }
++    tb.layer.mask = nil;
++    CGRect b = tb.bounds;
++    if (b.size.width < 1) return;
++    tb.clipsToBounds = NO;
++    UIBezierPath *p = [UIBezierPath bezierPathWithRoundedRect:b byRoundingCorners:UIRectCornerTopLeft | UIRectCornerTopRight
++                                                   cornerRadii:CGSizeMake(26, 26)];
++    CAShapeLayer *m = [CAShapeLayer layer];
++    m.path = p.CGPath;
++    tb.layer.mask = m;
++}
++
++// Liquid Glass: the pages' corners round into the screen, above the bars and the bubble, so the top and bottom of
++// each page look like one piece of glass. Rebuilt with every theme so it takes the new color.
++- (void)refreshScreenEdges {
++    [self.edges removeFromSuperview];
++    self.edges = nil;
++    if (!VGLiquidEnabled()) return;
++    UIView *host = self.window ?: self.tabs.view;
++    self.edges = [VGGlassScreenEdges attachTo:host];
++    [host bringSubviewToFront:self.edges];
++    BOOL sidebar = [self.window.rootViewController isKindOfClass:VGSidebarController.class];
++    UIRectCorner all = kCALayerMinXMinYCorner | kCALayerMaxXMinYCorner | kCALayerMinXMaxYCorner | kCALayerMaxXMaxYCorner;
++    [self.edges setShowsTop:!sidebar bottom:!sidebar corners:all];
++    [self roundTabBar];
++    [self glassAllBars];
++}
++
++// iOS 26: every bar's buttons become glass capsules, and they go back to tinted text when called on again.
++- (void)glassAllBars {
++    BOOL liquid = VGLiquidEnabled();
++    void (^walk)(UIViewController *) = ^(UIViewController *vc) {
++        if ([vc isKindOfClass:UINavigationController.class]) {
++            UINavigationController *n = (UINavigationController *)vc;
++            n.navigationBar.tintColor = liquid ? (VGLight ? VGAccent : VGText) : VGAccent;
++            if (liquid) VGStyleNavigationBar(n.navigationBar);
++            for (UIViewController *c in n.viewControllers) walk(c);
++        } else if ([vc isKindOfClass:UITabBarController.class]) {
++            for (UIViewController *c in ((UITabBarController *)vc).viewControllers) walk(c);
++        } else if (vc.presentedViewController) {
++            walk(vc.presentedViewController);
++        }
++    };
++    walk(self.window.rootViewController ?: self.tabs);
++    self.tabs.tabBar.tintColor = liquid ? (VGLight ? VGAccent : VGText) : VGText;
++}
++
+ // A new theme: the pages are rebuilt inside the same tab controller, so a playing video, the mini player and anything
+ // open on screen keep going.
+ - (void)rebuildForTheme {
+@@ -154,6 +231,8 @@
+     self.pill = [VGProgressPill new];
+     [self.pill addTarget:self action:@selector(openDownloads) forControlEvents:UIControlEventTouchUpInside];
+     [self.tabs.view addSubview:self.pill];
++    [self refreshScreenEdges];
++    [self glassAllBars];
+ }
+ 
+ - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+@@ -179,6 +258,9 @@
+     self.window.tintColor = VGAccent;
+     [self installRoot:NO];
+     [self.window makeKeyAndVisible];
++    // Liquid Glass follows the system's Reduce Transparency switch; turning it or the Settings switch changes the pages.
++    VGLiquidListenForAccessibility();
++    [self refreshScreenEdges];
+     // Look for a newer VidGrab on GitHub every time the app opens or comes back to the front.
+     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+         [VGUpdater checkQuietlyFrom:self.tabs];
+@@ -203,6 +285,16 @@
+                                                 usingBlock:^(NSNotification *n) {
+         self.pill.suppressed = [n.object boolValue] || self.tabs.selectedIndex == 1;
+     }];
++    [NSNotificationCenter.defaultCenter addObserverForName:VGGlassDidChangeNotification object:nil queue:NSOperationQueue.mainQueue
++                                                usingBlock:^(NSNotification *n) { [self refreshScreenEdges]; }];
++    // Bars move and resize (rotation, iPad): the rounded bar and screen corners follow.
++    [NSNotificationCenter.defaultCenter addObserverForName:UIDeviceOrientationDidChangeNotification object:nil queue:NSOperationQueue.mainQueue
++                                                usingBlock:^(NSNotification *n) {
++        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.35 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
++            [self roundTabBar];
++            [self.edges refresh];
++        });
++    }];
+     [NSNotificationCenter.defaultCenter addObserverForName:VGThemeDidChangeNotification object:nil queue:NSOperationQueue.mainQueue
+                                                 usingBlock:^(NSNotification *n) {
+         // Wait until the picker sheet has finished closing, and rebuild with animations off, so nothing is changed in the middle of its closing animation.
