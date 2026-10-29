@@ -29,6 +29,13 @@ jobs:
           echo "$HOME/theos/bin" >> "$GITHUB_PATH"
           # 用 Linux 本机的 clang/lld 当工具链（theos 自带的 Darwin 交叉链条在 x86 上跑不起来）
           echo "THEOS_PLATFORM_NAME=" >> "$GITHUB_ENV"
+          # theos 默认去 toolchain/linux/iphone/bin 找编译器，把系统 clang/lld 链过去
+          mkdir -p "$HOME/theos/toolchain/linux/iphone/bin"
+          for t in clang clang++ ld lld; do
+            sudo ln -sf "$(command -v $t)" "$HOME/theos/toolchain/linux/iphone/bin/$t" 2>/dev/null || true
+          done
+          sudo ln -sf "$(command -v llvm-strip)" "$HOME/theos/toolchain/linux/iphone/bin/llvm-strip" 2>/dev/null || true
+          ls -l "$HOME/theos/toolchain/linux/iphone/bin/" | head
 
       - name: 下载 iOS SDK
         run: |
