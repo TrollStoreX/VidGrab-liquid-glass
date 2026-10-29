@@ -20,13 +20,26 @@ jobs:
       - name: 安装依赖
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq curl xz-utils git make perl clang lld libc++-dev libc++abi-dev libncurses5 2>/dev/null || true
+          sudo apt-get install -y -qq curl xz-utils git make perl clang lld llvm libc++-dev libc++abi-dev libncurses5 2>/dev/null || true
 
       - name: 安装 Theos
         run: |
           git clone --recursive --depth 1 https://github.com/theos/theos.git "$HOME/theos"
           echo "THEOS=$HOME/theos" >> "$GITHUB_ENV"
           echo "$HOME/theos/bin" >> "$GITHUB_PATH"
+          # 用 Linux 本机的 clang/lld 当工具链
+          mkdir -p "$HOME/theos/makefiles/targets/Linux"
+          cat > "$HOME/theos/makefiles/targets/Linux/iphone.mk" <<'MK'
+          TARGET_CC = clang
+          TARGET_CXX = clang++
+          TARGET_LD = clang
+          TARGET_STRIP = llvm-strip
+          TARGET_NM = llvm-nm
+          TARGET_OBJCOPY = llvm-objcopy
+          TARGET_OBJDUMP = llvm-objdump
+          include $(THEOS_MAKE_PATH)/targets/Linux/common.mk
+          MK
+          echo "Linux 目标已写入"
 
       - name: 下载 iOS SDK
         run: |
