@@ -1,6 +1,7 @@
 #import "VGDownloadDefaults.h"
 #import "VGActions.h"
 #import "VGTheme.h"
+#import "VGLiquid.h"
 #import "VGKeepAlive.h"
 #import "VGPlayerGestures.h"
 #import "VGSubtitles.h"

@@ -7,7 +7,7 @@ include $(THEOS)/makefiles/common.mk
 # 用来在 CI 上确认「液态玻璃」改动没有语法错误。
 APPLICATION_NAME = VidGrabSyntax
 
-VidGrabSyntax_FILES = $(filter-out Sources/VGConvert.m Sources/VGTranscoder.m Sources/VGSubtitles.m Sources/VGLyrics.m,$(wildcard Sources/*.m))
+VidGrabSyntax_FILES = $(filter-out Sources/VGConvert.m Sources/VGTranscoder.m Sources/VGLive.m Sources/VGSubtitles.m Sources/VGLyrics.m,$(wildcard Sources/*.m))
 VidGrabSyntax_FRAMEWORKS = Accelerate PhotosUI UIKit Foundation AVFoundation AVKit CoreMedia Photos JavaScriptCore CoreVideo WebKit LocalAuthentication MediaPlayer UserNotifications Security AudioToolbox UniformTypeIdentifiers Network CoreImage ImageIO CoreLocation Vision
 VidGrabSyntax_CFLAGS = -fobjc-arc -Wno-deprecated-declarations -Wno-unused-function -Wno-unused-variable -Iwhisper -DNDEBUG
 VidGrabSyntax_CODESIGN_FLAGS = -S
