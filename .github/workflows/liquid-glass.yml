@@ -31,7 +31,12 @@ jobs:
       - name: 下载 iOS SDK
         run: |
           mkdir -p "$HOME/theos/sdks"
-          curl -sL "https://github.com/theos/sdks/raw/master/iPhoneOS16.5.sdk.tar.xz" -o sdk.tar.xz
+          URL=$(curl -s https://api.github.com/repos/theos/sdks/releases/latest \
+                | grep -oE '"browser_download_url": *"[^"]*iPhoneOS16\.5\.sdk\.tar\.xz"' \
+                | head -1 | cut -d'"' -f4)
+          echo "下载 $URL"
+          curl -sL "$URL" -o sdk.tar.xz
+          file sdk.tar.xz || true
           tar xJf sdk.tar.xz -C "$HOME/theos/sdks/"
           ls "$HOME/theos/sdks/"
 
