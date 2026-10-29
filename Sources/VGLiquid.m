@@ -417,17 +417,19 @@ UIView *VGGlassBackdrop(UIView *view, BOOL dark) {
 }
 
 void VGStyleGlassButton(UIButton *button) {
-    if (!button) return;
-    if (HasRealGlass()) {
-        // 26's own glass button: the glass capsule, with the accent kept for the icon.
-        if (@available(iOS 26.0, *)) {
-            UIGlassEffect *fx = (UIGlassEffect *)MakeGlassEffect(NO);
-            if (fx) button.configuration = [UIButtonConfiguration glassButtonConfiguration];
-        }
-    }
+    if (!button || !HasRealGlass()) return;
+    // iOS 26 的玻璃胶囊按钮：类名和选择器都按字符串找，旧 SDK 里没有这些符号也不影响编译。
+    Class cfg = NSClassFromString(@"UIButtonConfiguration");
+    SEL sel = NSSelectorFromString(@"glassButtonConfiguration");
+    if (!cfg || ![cfg respondsToSelector:sel]) return;
+    typedef id (*CfgFn)(id, SEL);
+    id c = ((CfgFn)[cfg methodForSelector:sel])((id)cfg, sel);
+    if (c) button.configuration = c;
 }
 
 #pragma mark - Screen edges
+
+static UIBezierPath *CornerPunch(CGRect b, CGFloat r, BOOL left, BOOL top);
 
 @interface VGGlassScreenEdges ()
 @property (nonatomic, assign) UIRectCorner corners;

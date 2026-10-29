@@ -296,7 +296,7 @@ static UILabel *TimeLabel(NSTextAlignment align) {
     blur.translatesAutoresizingMaskIntoConstraints = NO;
     [self.card addSubview:blur];
     // Liquid Glass: the sheet becomes glass, the blur above is only used before iOS 26.
-    if (VGLiquidEnabled() && NSClassFromString(@"UIGlassEffect") && @available(iOS 26.0, *)) {
+    if (VGLiquidEnabled() && NSClassFromString(@"UIGlassEffect") != Nil) {
         self.card.backgroundColor = UIColor.clearColor;
         VGApplyGlass(self.card, 28, YES);
     }
