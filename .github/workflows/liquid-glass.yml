@@ -53,6 +53,8 @@ jobs:
         run: |
           set -o pipefail
           make -f Makefile.syntax -j"$(nproc)" TARGET=iphone:clang:16.5:15.0 ARCHS=arm64 FINALPACKAGE=1 2>&1 | tee build.log | tail -n 60
-          echo "=== 错误汇总 ==="
-          grep -E "error:" build.log | sort -u | head -40
+          echo "=== 错误汇总（按文件） ==="
+          grep -E "error:" build.log | sed -E 's/^Source[s]?\///' | sort -u | head -60
+          echo "=== 出错文件统计 ==="
+          grep -E "error:" build.log | grep -oE "Sources/[A-Za-z0-9]+\.m" | sort | uniq -c | sort -rn
           if grep -qE "error:" build.log; then exit 1; fi
